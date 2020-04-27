@@ -76,7 +76,7 @@ class LaserPlasmaICS:
             l.prm['Energy'] = l._Energy_from_Power()
         elif 'Power' in l.prm:
             l.prm['Energy'] = l._Energy_from_Power()
-            if l.prm['w0'] in l.prm:
+            if 'w0' in l.prm:
                 l.prm['Intensity'] = l._Intens_from_Power()
                 l.prm['a0'] = l._a0_from_Intens()
         elif 'Energy' in l.prm:
