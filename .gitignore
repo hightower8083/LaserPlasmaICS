@@ -1,0 +1,14 @@
+*.DS_Store
+__pycache__/
+*.pyc
+LPICS/*.DS_Store
+LPICS/__pycache__
+LPICS/*.pyc
+
+.ipynb_checkpoints/
+LPICS/.ipynb_checkpoints/
+build/
+dist/
+LPICS.egg-info/
+.cache/
+.eggs/
