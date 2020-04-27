@@ -1,5 +1,4 @@
-# LaserPlasmaICS
-Laser Plasma Interaction Cheat-Sheet
+# Laser Plasma Interaction Cheat-Sheet
 
 A simple script to calculate basic parameters for relativistic laser plasma interactions (for 
 personal use mainly). 
