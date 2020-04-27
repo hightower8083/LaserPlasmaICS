@@ -40,13 +40,13 @@ print(f"{lpi.density_match('critPower'):0.4g}")
 ## Installation
 
 Can be installed by cloning the source 
-```
+```bash
 git clone https://github.com/hightower8083/LaserPlasmaICS.git
 cd LaserPlasmaICS
 python setup.py install
 ```
 or via PiPy
-```
+```bash
 pip install git+https://github.com/hightower8083/LaserPlasmaICS.git
 ```
 
