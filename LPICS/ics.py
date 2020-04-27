@@ -17,11 +17,19 @@ coef_fwhm = (2*np.log(2))**-0.5
 class LaserPlasmaICS:
     """
     Laser Plasma Interactive Cheat-Sheet
+
+    After being initialized, has various conversions of input data
+    in the dictionary `prm`
+
+    Method:
+    ---------
+    density_match: finds values of plasma density for different
+                   matching conditions (see documentation)
     """
 
     def __init__(l, **prm):
         """
-        Initialze with given laser and plasma characteristics
+        Initialize with given laser and plasma characteristics
 
         Parameter
         ---------
@@ -86,15 +94,19 @@ class LaserPlasmaICS:
         Parameter
         ---------
         name: string
-            `WLu`      : transverse matching from [W Lu PRSTAB 2007]
-            `crit`     : Critical density for laser wavelength
-            `critPower`: Density for which laser power supports relativistic
-                         self-focusing [G.-Z. Sun Phys. Fluids 1987]
+            `WLu`         : transverse matching from [W Lu PRSTAB 2007]
+            `crit`        : critical density for laser wavelength
+            `longitudinal`: density for which laser duration is resonant
+                            with a linear plasma wave [Gorbunov JETP 1987]
+            `critPower`   : density for which laser power supports relativistic
+                            self-focusing [G.-Z. Sun Phys. Fluids 1987]
         """
         if name is 'WLu':
             return 1e6 * l.prm['a0'] / pi  / r_e / l.prm['w0']**2
         if name is 'crit':
             return 1e6 * pi / r_e / l.prm['lam0']**2
+        if name is 'longitudinal':
+            return 1e6 / pi / r_e / (c*l.prm['tau']*1e-9)**2
         if name is 'critPower':
             n_pe = l.density_match('crit')
             return n_pe * (2*P_ru) / l.prm['Power']
