@@ -1,10 +1,9 @@
-# LaserPlasmaICS
-Laser Plasma Interaction Cheat-Sheet
+## Laser Plasma Interaction Cheat-Sheet
 
 A simple script to calculate basic parameters for relativistic laser plasma interactions (for 
 personal use mainly). 
 
-## Motivation
+### Motivation
 
 When describing a laser, LPA people often define it by _energy on target_, or _output power_, 
 with FWHM durations and beam size (can mean radius, waist, diameter etc). LaserPlasmaICS allows 
@@ -37,7 +36,7 @@ print(f"{lpi.density_match('WLu'):0.4g}, {lpi.density_match('longitudinal'):0.4g
 print(f"{lpi.density_match('critPower'):0.4g}")
 ```
 
-## Installation
+### Installation
 
 Can be installed by cloning the source 
 ```bash
@@ -50,6 +49,6 @@ or via PiPy
 pip install git+https://github.com/hightower8083/LaserPlasmaICS.git
 ```
 
-## Contributions
+### Contributions
 
 Feel free to propose your favorite formulas or fixes
