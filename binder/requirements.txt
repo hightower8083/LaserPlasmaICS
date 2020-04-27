@@ -1,3 +1,4 @@
 numpy
 scipy
+matplotlib
 git+https://github.com/hightower8083/LaserPlasmaICS.git
