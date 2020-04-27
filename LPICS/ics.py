@@ -1,5 +1,7 @@
 from scipy.constants import e, m_e, c, pi
 from scipy.constants import epsilon_0 as eps0
+import numpy as np
+
 # Classic electron radius (meters)
 r_e = e**2 / (4*pi * eps0 * m_e*c**2)
 
@@ -8,6 +10,9 @@ P_ru = m_e * c**3 / r_e
 
 # a0 for lambda=1um and I=1e18 W/cm^2
 coef_I2a0 = (2/pi/P_ru * 1e10)**.5
+
+# covert FWHM of `E^2` to RMS*sqrt(2) of `E`
+coef_fwhm = (2*np.log(2))**-0.5
 
 class LaserPlasmaICS:
     """
@@ -44,30 +49,34 @@ class LaserPlasmaICS:
             l.prm['lam0'] = 0.8
 
         if 'tau_fwhm' in l.prm:
-            l.prm['tau'] = l.prm['tau_fwhm'] * 2/2.355
+            l.prm['tau'] = l.prm['tau_fwhm'] * coef_fwhm
+        else:
+            l.prm['tau_fwhm'] = l.prm['tau'] / coef_fwhm
 
         if 'R_fwhm' in l.prm:
-            l.prm['w0'] = l.prm['R_fwhm'] * 2/2.355
+            l.prm['w0'] = l.prm['R_fwhm'] * coef_fwhm
+        else:
+            l.prm['R_fwhm'] = l.prm['w0'] / coef_fwhm
 
         if 'a0' in l.prm:
             l.prm['Intensity'] = 1e18 * (l.prm['a0']/l.prm['lam0']/coef_I2a0)**2
-            l.prm['Power'] = l._power()
-            l.prm['Energy'] = l._energy()
+            l.prm['Power'] = l._Power_from_Intens()
+            l.prm['Energy'] = l._Energy_from_Power()
         elif 'Intensity' in l.prm:
-            l.prm['a0'] = l._a0()
-            l.prm['Power'] = l._power()
-            l.prm['Energy'] = l._energy()
+            l.prm['a0'] = l._a0_from_Intens()
+            l.prm['Power'] = l._Power_from_Intens()
+            l.prm['Energy'] = l._Energy_from_Power()
         elif 'Power' in l.prm:
-            l.prm['Energy'] = l._energy()
+            l.prm['Energy'] = l._Energy_from_Power()
             if l.prm['w0'] in l.prm:
-                l.prm['Intensity'] = 4e8/pi * l.prm['Power'] / l.prm['w0']**2
-                l.prm['a0'] = l._a0()
+                l.prm['Intensity'] = l._Intens_from_Power()
+                l.prm['a0'] = l._a0_from_Intens()
         elif 'Energy' in l.prm:
             if 'tau' in l.prm:
                 l.prm['Power'] = (2e30/pi)**.5 * l.prm['Energy']/l.prm['tau']
                 if 'w0' in l.prm:
-                    l.prm['Intensity'] = 4e8/pi*l.prm['Power']/l.prm['w0']**2
-                    l.prm['a0'] = l._a0()
+                    l.prm['Intensity'] = l._Intens_from_Power()
+                    l.prm['a0'] = l._a0_from_Intens()
 
     def density_match(l, name):
         """
@@ -90,21 +99,28 @@ class LaserPlasmaICS:
             n_pe = l.density_match('crit')
             return n_pe * (2*P_ru) / l.prm['Power']
 
-    def _a0(l):
+    def _a0_from_Intens(l):
         if 'lam0' in l.prm:
             return 1e-9 * coef_I2a0*l.prm['lam0']*l.prm['Intensity']**.5
         else:
             print('Need laser wavelength')
             return 0.0
 
-    def _power(l):
+    def _Intens_from_Power(l):
         if 'w0' in l.prm:
-            return pi/4 * l.prm['Intensity'] * (l.prm['w0']*1e-4)**2
+            return 2e8/pi * l.prm['Power'] / l.prm['w0']**2
         else:
             print('Need laser waist')
             return 0.0
 
-    def _energy(l):
+    def _Power_from_Intens(l):
+        if 'w0' in l.prm:
+            return pi/2e8 * l.prm['Intensity'] * l.prm['w0']**2
+        else:
+            print('Need laser waist')
+            return 0.0
+
+    def _Energy_from_Power(l):
         if 'tau' in l.prm:
             return (pi/2e30)**0.5 * l.prm['Power'] * l.prm['tau']
         else:
