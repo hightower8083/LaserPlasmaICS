@@ -1,3 +1,5 @@
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/hightower8083/LaserPlasmaICS.git/master?filepath=.%2Fexample%2FExample.ipynb)
+
 ## Laser Plasma Interaction Cheat-Sheet
 
 A simple script to calculate basic parameters for relativistic laser plasma interactions (for 
@@ -35,6 +37,10 @@ print(f"{lpi.density_match('WLu'):0.4g}, {lpi.density_match('longitudinal'):0.4g
 # Density at which laser power becomes critical
 print(f"{lpi.density_match('critPower'):0.4g}")
 ```
+
+### Try online
+
+You can use the script [online via Binder](https://mybinder.org/v2/gh/hightower8083/LaserPlasmaICS.git/master?filepath=.%2Fexample%2FExample.ipynb)
 
 ### Installation
 
