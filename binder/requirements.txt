@@ -1,0 +1,3 @@
+numpy
+scipy
+git+https://github.com/hightower8083/LaserPlasmaICS.git
