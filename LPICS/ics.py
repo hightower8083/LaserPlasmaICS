@@ -49,12 +49,20 @@ class LaserPlasmaICS:
         a0: unitless
             normalized vector-potential $a_0 = e E_max / (m_e c \omega_0)$
             Alternatively, can be defined with `Intensity`, `Power`, `Energy`
+
+        pol: `linear` (default) or `circular`
+            laser polarization. Accounted in the plasma Lorentz factor
+            $\gamma_p$ being $\sqrt{1+a_0^2}$ for `circular`, and
+            $\sqrt{1+a_0^2/2}$ for `linear` polarisations
         """
 
         l.prm = prm
 
         if 'lam0' not in l.prm:
             l.prm['lam0'] = 0.8
+
+        if 'pol' not in l.prm:
+            l.prm['pol'] = 'linear'
 
         if 'tau_fwhm' in l.prm:
             l.prm['tau'] = l.prm['tau_fwhm'] * coef_fwhm
@@ -86,6 +94,12 @@ class LaserPlasmaICS:
                     l.prm['Intensity'] = l._Intens_from_Power()
                     l.prm['a0'] = l._a0_from_Intens()
 
+        if 'a0' in l.prm:
+            if l.prm['pol'] is 'linear':
+                 l.prm['gamma_p'] = (1 + l.prm['a0']**2/2.)**.5
+            elif l.prm['pol'] is 'circular':
+                 l.prm['gamma_p'] = (1 + l.prm['a0']**2)**.5
+
     def density_match(l, name):
         """
         Get density of electron plasma corresponding to
@@ -94,19 +108,27 @@ class LaserPlasmaICS:
         Parameter
         ---------
         name: string
-            `WLu`         : transverse matching from [W Lu PRSTAB 2007]
             `crit`        : critical density for laser wavelength
+            `WLu`         : transverse matching from [W Lu PRSTAB 2007]
+            `transverse`  : same as `WLu` but with $a_0$ replaced by
+                            $\gamma_p\sqrt{2}$
             `longitudinal`: density for which laser duration is resonant
                             with a linear plasma wave [Gorbunov JETP 1987]
+            `longitud_rel`: same as `longitudinal` but with added Lorentz
+                            factor $\gamma_p$
             `critPower`   : density for which laser power supports relativistic
                             self-focusing [G.-Z. Sun Phys. Fluids 1987]
         """
-        if name is 'WLu':
-            return 1e6 * l.prm['a0'] / pi  / r_e / l.prm['w0']**2
         if name is 'crit':
             return 1e6 * pi / r_e / l.prm['lam0']**2
+        if name is 'WLu':
+            return 1e6 * l.prm['a0'] / pi  / r_e / l.prm['w0']**2
+        if name is 'transverse':
+            return 1e6 * 2**.5 * l.prm['gamma_p'] / pi  / r_e / l.prm['w0']**2
         if name is 'longitudinal':
             return 1e6 / pi / r_e / (c*l.prm['tau']*1e-9)**2
+        if name is 'longitud_rel':
+            return 1e6 * l.prm['gamma_p'] / pi / r_e / (c*l.prm['tau']*1e-9)**2
         if name is 'critPower':
             n_pe = l.density_match('crit')
             return n_pe * (2*P_ru) / l.prm['Power']
