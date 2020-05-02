@@ -58,21 +58,32 @@ class LaserPlasmaICS:
 
         l.prm = prm
 
+        if 'verbose' not in l.prm:
+            verbose = False
+        else:
+            verbose = l.prm['verbose']
+
         if 'lam0' not in l.prm:
             l.prm['lam0'] = 0.8
+            if verbose: print('assume lam0=0.8')
 
         if 'pol' not in l.prm:
             l.prm['pol'] = 'linear'
+            if verbose: print("assume pol='linear'")
 
         if 'tau_fwhm' in l.prm:
             l.prm['tau'] = l.prm['tau_fwhm'] * coef_fwhm
-        else:
+        elif 'tau' in l.prm:
             l.prm['tau_fwhm'] = l.prm['tau'] / coef_fwhm
+        else:
+            if verbose: print('no pulse duration')
 
         if 'R_fwhm' in l.prm:
             l.prm['w0'] = l.prm['R_fwhm'] * coef_fwhm
-        else:
+        elif 'w0' in l.prm:
             l.prm['R_fwhm'] = l.prm['w0'] / coef_fwhm
+        else:
+            if verbose: print('no pulse size')
 
         if 'a0' in l.prm:
             l.prm['Intensity'] = 1e18 * (l.prm['a0']/l.prm['lam0']/coef_I2a0)**2
@@ -93,6 +104,8 @@ class LaserPlasmaICS:
                 if 'w0' in l.prm:
                     l.prm['Intensity'] = l._Intens_from_Power()
                     l.prm['a0'] = l._a0_from_Intens()
+        else:
+            if verbose: print('no laser field')
 
         if 'a0' in l.prm:
             if l.prm['pol'] is 'linear':
@@ -134,29 +147,25 @@ class LaserPlasmaICS:
             return n_pe * (2*P_ru) / l.prm['Power']
 
     def _a0_from_Intens(l):
-        if 'lam0' in l.prm:
-            return 1e-9 * coef_I2a0*l.prm['lam0']*l.prm['Intensity']**.5
-        else:
-            print('Need laser wavelength')
-            return 0.0
+        return 1e-9 * coef_I2a0*l.prm['lam0']*l.prm['Intensity']**.5
 
     def _Intens_from_Power(l):
         if 'w0' in l.prm:
             return 2e8/pi * l.prm['Power'] / l.prm['w0']**2
         else:
-            print('Need laser waist')
+            if verbose:  print('Need laser waist, Intensity is set to 0')
             return 0.0
 
     def _Power_from_Intens(l):
         if 'w0' in l.prm:
             return pi/2e8 * l.prm['Intensity'] * l.prm['w0']**2
         else:
-            print('Need laser waist')
+            if verbose:  print('Need laser waist, Intensity is set to 0')
             return 0.0
 
     def _Energy_from_Power(l):
         if 'tau' in l.prm:
             return (pi/2e30)**0.5 * l.prm['Power'] * l.prm['tau']
         else:
-            print('Need laser duration')
+            if verbose: print('Need pulse duration, Energy is set to 0')
             return 0.0
