@@ -16,7 +16,7 @@ coef_fwhm = (2*np.log(2))**-0.5
 
 class LaserPlasmaICS:
     """
-    Laser Plasma Interactive Cheat-Sheet
+    Laser Plasma Interaction Cheat-Sheet
 
     After being initialized, has various conversions of input data
     in the dictionary `prm`
@@ -34,7 +34,7 @@ class LaserPlasmaICS:
         Parameter
         ---------
         lam0: micron
-            Laser central wavelength. Default is set to 0.8um
+            Laser central wavelength in microns. Default is set to 0.8
 
         tau : fs
             laser duration defined as $E=E_0 \exp(-t^2/\tau^2)$.
@@ -44,11 +44,12 @@ class LaserPlasmaICS:
         w0: micron
             laser size at focus (waist) defined as $E=E_0 \exp(-r^2/w_0^2)$.
             Alternatively, can be defined as full width at half maximum
-            of intensity `R_fwhm
+            of intensity `R_fwhm`
 
         a0: unitless
             normalized vector-potential $a_0 = e E_max / (m_e c \omega_0)$
-            Alternatively, can be defined with `Intensity`, `Power`, `Energy`
+            Alternatively, can be defined with `Intensity` [W/cm^2],
+            `Power` [W], `Energy` [J]
 
         pol: `linear` (default) or `circular`
             laser polarization. Accounted in the plasma Lorentz factor
