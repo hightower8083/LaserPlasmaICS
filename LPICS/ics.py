@@ -80,17 +80,17 @@ class LaserPlasmaICS:
             l.prm['pol'] = 'linear'
             if l.verbose: print("assume pol='linear'")
 
-        if 'tau_fwhm' in l.prm:
-            l.prm['tau'] = l.prm['tau_fwhm'] * coef_fwhm
-        elif 'tau' in l.prm:
+        if 'tau' in l.prm:
             l.prm['tau_fwhm'] = l.prm['tau'] / coef_fwhm
+        elif 'tau_fwhm' in l.prm:
+            l.prm['tau'] = l.prm['tau_fwhm'] * coef_fwhm
         else:
             if l.verbose: print('no pulse duration')
 
-        if 'R_fwhm' in l.prm:
-            l.prm['w0'] = l.prm['R_fwhm'] * coef_fwhm
-        elif 'w0' in l.prm:
+        if 'w0' in l.prm:
             l.prm['R_fwhm'] = l.prm['w0'] / coef_fwhm
+        elif 'R_fwhm' in l.prm:
+            l.prm['w0'] = l.prm['R_fwhm'] * coef_fwhm
         else:
             if l.verbose: print('no pulse size')
 
