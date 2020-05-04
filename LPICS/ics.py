@@ -1,5 +1,6 @@
 from scipy.constants import e, m_e, c, pi
 from scipy.constants import epsilon_0 as eps0
+from scipy.constants import k as k_B
 import numpy as np
 
 # Classic electron radius (meters)
@@ -34,7 +35,7 @@ class LaserPlasmaICS:
         Parameter
         ---------
         lam0: micron
-            Laser central wavelength in microns. Default is set to 0.8
+            Laser central wavelength in microns. Default is set to 0.8 um
 
         tau : fs
             laser duration defined as $E=E_0 \exp(-t^2/\tau^2)$.
@@ -55,36 +56,43 @@ class LaserPlasmaICS:
             laser polarization. Accounted in the plasma Lorentz factor
             $\gamma_p$ being $\sqrt{1+a_0^2}$ for `circular`, and
             $\sqrt{1+a_0^2/2}$ for `linear` polarisations
+
+        n_pe: cm^-3
+            electron plasma density
+
+        T_e: keV
+            electron plasma temperature
         """
 
         l.prm = prm
 
         if 'verbose' not in l.prm:
-            verbose = False
+            l.verbose = False
         else:
-            verbose = l.prm['verbose']
+            l.verbose = l.prm['verbose']
 
+        # LASER
         if 'lam0' not in l.prm:
             l.prm['lam0'] = 0.8
-            if verbose: print('assume lam0=0.8')
+            if l.verbose: print('assume lam0=0.8')
 
         if 'pol' not in l.prm:
             l.prm['pol'] = 'linear'
-            if verbose: print("assume pol='linear'")
+            if l.verbose: print("assume pol='linear'")
 
         if 'tau_fwhm' in l.prm:
             l.prm['tau'] = l.prm['tau_fwhm'] * coef_fwhm
         elif 'tau' in l.prm:
             l.prm['tau_fwhm'] = l.prm['tau'] / coef_fwhm
         else:
-            if verbose: print('no pulse duration')
+            if l.verbose: print('no pulse duration')
 
         if 'R_fwhm' in l.prm:
             l.prm['w0'] = l.prm['R_fwhm'] * coef_fwhm
         elif 'w0' in l.prm:
             l.prm['R_fwhm'] = l.prm['w0'] / coef_fwhm
         else:
-            if verbose: print('no pulse size')
+            if l.verbose: print('no pulse size')
 
         if 'a0' in l.prm:
             l.prm['Intensity'] = 1e18 * (l.prm['a0']/l.prm['lam0']/coef_I2a0)**2
@@ -96,23 +104,62 @@ class LaserPlasmaICS:
             l.prm['Energy'] = l._Energy_from_Power()
         elif 'Power' in l.prm:
             l.prm['Energy'] = l._Energy_from_Power()
+
             if 'w0' in l.prm:
                 l.prm['Intensity'] = l._Intens_from_Power()
                 l.prm['a0'] = l._a0_from_Intens()
         elif 'Energy' in l.prm:
             if 'tau' in l.prm:
                 l.prm['Power'] = (2e30/pi)**.5 * l.prm['Energy']/l.prm['tau']
+
                 if 'w0' in l.prm:
                     l.prm['Intensity'] = l._Intens_from_Power()
                     l.prm['a0'] = l._a0_from_Intens()
         else:
-            if verbose: print('no laser field')
+            if l.verbose: print('no laser field')
 
         if 'a0' in l.prm:
             if l.prm['pol'] is 'linear':
                  l.prm['gamma_p'] = (1 + l.prm['a0']**2/2.)**.5
             elif l.prm['pol'] is 'circular':
                  l.prm['gamma_p'] = (1 + l.prm['a0']**2)**.5
+
+        # PLASMA
+        if 'T_e' in l.prm:
+            l.prm['v_e'] = (e * l.prm['T_e'] / m_e)**.5 / c
+            l.prm['T_e_K'] = e * l.prm['T_e'] / k_B
+
+            if l.prm['v_e']>1.0:
+                l.prm['v_e'] = 1.0
+                if l.verbose: print('plasma is relativistic')
+        else:
+            l.prm['T_e'] = np.infty
+            l.prm['T_e_K'] = np.infty
+            l.prm['v_e'] = 1.0
+
+        if 'n_pe' in l.prm:
+            l.prm['k_pe0'] = (4*pi * r_e * l.prm['n_pe']*1e6)**.5
+            l.prm['omega_pe0'] = l.prm['k_pe0'] * c
+            l.prm['lam_De0'] = l.prm['v_e']/l.prm['k_pe0'] * 1e6
+
+            if 'gamma_p' in l.prm:
+                l.prm['n_pe_rel'] = l.prm['n_pe'] / l.prm['gamma_p']
+                l.prm['k_pe'] = l.prm['k_pe0'] / l.prm['gamma_p']**.5
+                l.prm['omega_pe'] = l.prm['k_pe'] * c
+                l.prm['lam_De'] = l.prm['v_e']/l.prm['k_pe'] * 1e6
+                l.prm['N_pe'] = l.prm['n_pe_rel']/l.density_match('crit')
+            else:
+                l.prm['k_pe'] = l.prm['k_pe0']
+                l.prm['omega_pe'] = l.prm['omega_pe0']
+                l.prm['lam_De'] = l.prm['lam_De0']
+                l.prm['N_pe'] = l.prm['n_pe']/l.density_match('crit')
+
+            l.prm['v_wake'] = 1 - 0.5*l.prm['N_pe']
+
+            if 'w0' in l.prm:
+                l.prm['v_wake'] -= l.prm['lam0']**2 / (2*pi*l.prm['w0'])**2
+
+            l.prm['gamma_w'] = ( 1 - l.prm['v_wake']**2 )**-0.5
 
     def density_match(l, name):
         """
@@ -122,15 +169,15 @@ class LaserPlasmaICS:
         Parameter
         ---------
         name: string
-            `crit`        : critical density for laser wavelength
-            `WLu`         : transverse matching from [W Lu PRSTAB 2007]
-            `transverse`  : same as `WLu` but with $a_0$ replaced by
+            'crit'        : critical density for laser wavelength
+            'WLu'         : transverse matching from [W Lu PRSTAB 2007]
+            'transverse'  : same as `WLu` but with $a_0$ replaced by
                             $\gamma_p\sqrt{2}$
-            `longitudinal`: density for which laser duration is resonant
+            'longitudinal': density for which laser duration is resonant
                             with a linear plasma wave [Gorbunov JETP 1987]
-            `longitud_rel`: same as `longitudinal` but with added Lorentz
+            'longitud_rel': same as `longitudinal` but with added Lorentz
                             factor $\gamma_p$
-            `critPower`   : density for which laser power supports relativistic
+            'critPower'   : density for which laser power supports relativistic
                             self-focusing [G.-Z. Sun Phys. Fluids 1987]
         """
         if name is 'crit':
@@ -154,19 +201,19 @@ class LaserPlasmaICS:
         if 'w0' in l.prm:
             return 2e8/pi * l.prm['Power'] / l.prm['w0']**2
         else:
-            if verbose:  print('Need laser waist, Intensity is set to 0')
+            if l.verbose:  print('Need laser waist, Intensity is set to 0')
             return 0.0
 
     def _Power_from_Intens(l):
         if 'w0' in l.prm:
             return pi/2e8 * l.prm['Intensity'] * l.prm['w0']**2
         else:
-            if verbose:  print('Need laser waist, Intensity is set to 0')
+            if l.verbose:  print('Need laser waist, Intensity is set to 0')
             return 0.0
 
     def _Energy_from_Power(l):
         if 'tau' in l.prm:
             return (pi/2e30)**0.5 * l.prm['Power'] * l.prm['tau']
         else:
-            if verbose: print('Need pulse duration, Energy is set to 0')
+            if l.verbose: print('Need pulse duration, Energy is set to 0')
             return 0.0
