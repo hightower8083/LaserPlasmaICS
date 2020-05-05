@@ -76,6 +76,9 @@ class LaserPlasmaICS:
             l.prm['lam0'] = 0.8
             if l.verbose: print('assume lam0=0.8')
 
+        l.prm['n_c'] = 1e6 * pi / r_e / l.prm['lam0']**2
+
+
         if 'pol' not in l.prm:
             l.prm['pol'] = 'linear'
             if l.verbose: print("assume pol='linear'")
@@ -147,12 +150,12 @@ class LaserPlasmaICS:
                 l.prm['k_pe'] = l.prm['k_pe0'] / l.prm['gamma_p']**.5
                 l.prm['omega_pe'] = l.prm['k_pe'] * c
                 l.prm['lam_De'] = l.prm['v_e']/l.prm['k_pe'] * 1e6
-                l.prm['N_pe'] = l.prm['n_pe_rel']/l.density_match('crit')
+                l.prm['N_pe'] = l.prm['n_pe_rel']/l.prm['n_c']
             else:
                 l.prm['k_pe'] = l.prm['k_pe0']
                 l.prm['omega_pe'] = l.prm['omega_pe0']
                 l.prm['lam_De'] = l.prm['lam_De0']
-                l.prm['N_pe'] = l.prm['n_pe']/l.density_match('crit')
+                l.prm['N_pe'] = l.prm['n_pe']/l.prm['n_c']
 
             l.prm['v_wake'] = 1 - 0.5*l.prm['N_pe']
 
@@ -169,7 +172,6 @@ class LaserPlasmaICS:
         Parameter
         ---------
         name: string
-            'crit'        : critical density for laser wavelength
             'WLu'         : transverse matching from [W Lu PRSTAB 2007]
             'transverse'  : same as `WLu` but with $a_0$ replaced by
                             $\gamma_p\sqrt{2}$
@@ -180,8 +182,6 @@ class LaserPlasmaICS:
             'critPower'   : density for which laser power supports relativistic
                             self-focusing [G.-Z. Sun Phys. Fluids 1987]
         """
-        if name is 'crit':
-            return 1e6 * pi / r_e / l.prm['lam0']**2
         if name is 'WLu':
             return 1e6 * l.prm['a0'] / pi  / r_e / l.prm['w0']**2
         if name is 'transverse':
@@ -191,8 +191,7 @@ class LaserPlasmaICS:
         if name is 'longitud_rel':
             return 1e6 * l.prm['gamma_p'] / pi / r_e / (c*l.prm['tau']*1e-9)**2
         if name is 'critPower':
-            n_pe = l.density_match('crit')
-            return n_pe * (2*P_ru) / l.prm['Power']
+            return l.prm['n_c'] * (2*P_ru) / l.prm['Power']
 
     def _a0_from_Intens(l):
         return 1e-9 * coef_I2a0*l.prm['lam0']*l.prm['Intensity']**.5
