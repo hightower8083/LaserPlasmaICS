@@ -12,30 +12,34 @@ to define laser with different input. In the following example same laser is def
 of different parameters:
 
 ```python
-from LPICS.ics import CheatSheet
+from LPICS.ics import CheatSheet as cs
 
-lpi = CheatSheet(Energy=1.2, R_fwhm=16, tau_fwhm=27)
+lpi = cs(Energy=1.2, R_fwhm=16, tau_fwhm=27)
 print(f"Power is {lpi.prm['Power']*1e-12:0.4g} TW" )
 print(f"Duration field sqrt(2)*RMS is {lpi.prm['tau']:0.4g} fs" )
 
-lpi = CheatSheet(Power=41.75e12, R_fwhm=16, tau=22.93)
+lpi = cs(Power=41.75e12, R_fwhm=16, tau=22.93)
 print(f"\nField amplitude (normalized) is {lpi.prm['a0']:0.4g}" )
 print(f"Beam waist is {lpi.prm['w0']:0.4g} um" )
 
-lpi = CheatSheet(a0=2.595, w0=13.59, tau=22.93)
+lpi = cs(a0=2.595, w0=13.59, tau=22.93)
 print(f"\nLaser energy is {lpi.prm['Energy']:0.4g} J")
 ```
-The `lpi.prm` dictionary containes all necessary conversions. 
 
-Besides conversions, for a given laser there are methods to calculate useful plasma densities 
-corresponding to _matching_ and _critical_ conditions.
-```python
-# Densities for transverse (blowout) and longitudonal (linear wakefield)
-print(f"{lpi.match_density('WLu'):0.4g}, {lpi.match_density('longitudinal'):0.4g}")
-
-# Density at which laser power becomes critical
-print(f"{lpi.match_density('critPower'):0.4g}")
 ```
+Power is 41.75 TW
+Duration field sqrt(2)*RMS is 22.93 fs
+
+Field amplitude (normalized) is 2.595
+Beam waist is 13.59 um
+
+Laser energy is 1.2 J
+```
+
+The `lpi.prm` dictionary containes all necessary conversions, which can be used directly, .e.g `cs(Power=1e15, R_fwhm=50).prm['a0']`, `cs(lam0=0.8).prm['n_c']`. Besides conversions, for a given laser there are methods to calculate useful plasma densities corresponding to _matching_ and _critical_ conditions, e.g.
+-  `lpi.match_density('WLu')`
+-  `lpi.match_density('longitudinal')`
+-  `lpi.match_density('critPower')`
 
 ### Try online
 
