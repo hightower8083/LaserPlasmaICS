@@ -1,4 +1,4 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/hightower8083/LaserPlasmaICS.git/master?filepath=.%2Fbinder_example.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/hightower8083/CheatSheet.git/master?filepath=.%2Fbinder_example.ipynb)
 
 ## Laser Plasma Interaction Cheat-Sheet
 
@@ -8,22 +8,22 @@ personal use mainly).
 ### Motivation
 
 When describing a laser, LPA people often define it by _energy on target_, or _output power_, 
-with FWHM durations and beam size (can mean radius, waist, diameter etc). LaserPlasmaICS allows 
+with FWHM durations and beam size (can mean radius, waist, diameter etc). CheatSheet allows 
 to define laser with different input. In the following example same laser is defined with the help 
 of different parameters:
 
 ```python
-from LPICS.ics import LaserPlasmaICS
+from LPICS.ics import CheatSheet
 
-lpi = LaserPlasmaICS(Energy=1.2, R_fwhm=16, tau_fwhm=27)
+lpi = CheatSheet(Energy=1.2, R_fwhm=16, tau_fwhm=27)
 print(f"Power is {lpi.prm['Power']*1e-12:0.4g} TW" )
 print(f"Duration field sqrt(2)*RMS is {lpi.prm['tau']:0.4g} fs" )
 
-lpi = LaserPlasmaICS(Power=41.75e12, R_fwhm=16, tau=22.93)
+lpi = CheatSheet(Power=41.75e12, R_fwhm=16, tau=22.93)
 print(f"\nField amplitude (normalized) is {lpi.prm['a0']:0.4g}" )
 print(f"Beam waist is {lpi.prm['w0']:0.4g} um" )
 
-lpi = LaserPlasmaICS(a0=2.595, w0=13.59, tau=22.93)
+lpi = CheatSheet(a0=2.595, w0=13.59, tau=22.93)
 print(f"\nLaser energy is {lpi.prm['Energy']:0.4g} J")
 ```
 The `lpi.prm` dictionary containes all necessary conversions. 
@@ -32,27 +32,27 @@ Besides conversions, for a given laser there are methods to calculate useful pla
 corresponding to _matching_ and _critical_ conditions.
 ```python
 # Densities for transverse (blowout) and longitudonal (linear wakefield)
-print(f"{lpi.density_match('WLu'):0.4g}, {lpi.density_match('longitudinal'):0.4g}")
+print(f"{lpi.match_density('WLu'):0.4g}, {lpi.match_density('longitudinal'):0.4g}")
 
 # Density at which laser power becomes critical
-print(f"{lpi.density_match('critPower'):0.4g}")
+print(f"{lpi.match_density('critPower'):0.4g}")
 ```
 
 ### Try online
 
-You can use the script [online via Binder](https://mybinder.org/v2/gh/hightower8083/LaserPlasmaICS.git/master?filepath=.%2Fbinder_example.ipynb)
+You can use the script [online via Binder](https://mybinder.org/v2/gh/hightower8083/CheatSheet.git/master?filepath=.%2Fbinder_example.ipynb)
 
 ### Installation
 
 Can be installed by cloning the source 
 ```bash
-git clone https://github.com/hightower8083/LaserPlasmaICS.git
-cd LaserPlasmaICS
+git clone https://github.com/hightower8083/CheatSheet.git
+cd CheatSheet
 python setup.py install
 ```
 or via PiPy
 ```bash
-pip install git+https://github.com/hightower8083/LaserPlasmaICS.git
+pip install git+https://github.com/hightower8083/CheatSheet.git
 ```
 
 ### Contributions

@@ -15,7 +15,7 @@ coef_I2a0 = (2/pi/P_ru * 1e10)**.5
 # covert FWHM of `E^2` to RMS*sqrt(2) of `E`
 coef_fwhm = (2*np.log(2))**-0.5
 
-class LaserPlasmaICS:
+class CheatSheet:
     """
     Laser Plasma Interaction Cheat-Sheet
 
@@ -24,7 +24,7 @@ class LaserPlasmaICS:
 
     Method:
     ---------
-    density_match: finds values of plasma density for different
+    match_density: finds values of plasma density for different
                    matching conditions (see documentation)
     """
 
@@ -164,7 +164,7 @@ class LaserPlasmaICS:
 
             l.prm['gamma_w'] = ( 1 - l.prm['v_wake']**2 )**-0.5
 
-    def density_match(l, name):
+    def match_density(l, name):
         """
         Get density of electron plasma corresponding to
         one of avaliable matchings
