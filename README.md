@@ -1,9 +1,8 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/hightower8083/CheatSheet.git/master?filepath=.%2Fbinder_example.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/hightower8083/LaserPlasmaICS.git/master?filepath=.%2Fbinder_example.ipynb)
 
 ## Laser Plasma Interaction Cheat-Sheet
 
-A simple script to calculate basic parameters for relativistic laser plasma interactions (for 
-personal use mainly). 
+A simple script to calculate basic parameters for relativistic laser plasma interactions. 
 
 ### Motivation
 
@@ -40,19 +39,19 @@ print(f"{lpi.match_density('critPower'):0.4g}")
 
 ### Try online
 
-You can use the script [online via Binder](https://mybinder.org/v2/gh/hightower8083/CheatSheet.git/master?filepath=.%2Fbinder_example.ipynb)
+You can use the script [online via Binder](https://mybinder.org/v2/gh/hightower8083/LaserPlasmaICS.git/master?filepath=.%2Fbinder_example.ipynb)
 
 ### Installation
 
 Can be installed by cloning the source 
 ```bash
-git clone https://github.com/hightower8083/CheatSheet.git
+git clone https://github.com/hightower8083/LaserPlasmaICS.git
 cd CheatSheet
 python setup.py install
 ```
 or via PiPy
 ```bash
-pip install git+https://github.com/hightower8083/CheatSheet.git
+pip install git+https://github.com/hightower8083/LaserPlasmaICS.git
 ```
 
 ### Contributions
