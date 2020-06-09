@@ -157,10 +157,13 @@ class CheatSheet:
                 l.prm['lam_De'] = l.prm['lam_De0']
                 l.prm['N_pe'] = l.prm['n_pe']/l.prm['n_c']
 
-            l.prm['v_wake'] = 1 - 0.5*l.prm['N_pe']
+            if l.prm['N_pe'] < 1.0:
+                l.prm['v_wake'] = (1 + l.prm['N_pe'])**-0.5
 
-            if 'w0' in l.prm:
-                l.prm['v_wake'] -= l.prm['lam0']**2 / (2*pi*l.prm['w0'])**2
+                if 'w0' in l.prm:
+                    l.prm['v_wake'] -= l.prm['lam0']**2 / (2*pi*l.prm['w0'])**2
+            else:
+                l.prm['v_wake'] = 0.0
 
             l.prm['gamma_w'] = ( 1 - l.prm['v_wake']**2 )**-0.5
 
