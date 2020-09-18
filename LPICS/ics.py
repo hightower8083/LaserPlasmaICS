@@ -78,7 +78,6 @@ class CheatSheet:
 
         l.prm['n_c'] = 1e6 * pi / r_e / l.prm['lam0']**2
 
-
         if 'pol' not in l.prm:
             l.prm['pol'] = 'linear'
             if l.verbose: print("assume pol='linear'")
@@ -92,8 +91,10 @@ class CheatSheet:
 
         if 'w0' in l.prm:
             l.prm['R_fwhm'] = l.prm['w0'] / coef_fwhm
+            l.prm['Rayleigh'] = np.pi * l.prm['w0']**2 / l.prm['lam0']
         elif 'R_fwhm' in l.prm:
             l.prm['w0'] = l.prm['R_fwhm'] * coef_fwhm
+            l.prm['Rayleigh'] = np.pi * l.prm['w0']**2 / l.prm['lam0']
         else:
             if l.verbose: print('no pulse size')
 
