@@ -3,6 +3,13 @@ from scipy.constants import epsilon_0 as eps0
 from scipy.constants import k as k_B
 import numpy as np
 
+try:
+    from mendeleev import element as table_element
+    mendeleev_avail = True
+except Exception:
+    mendeleev_avail = False
+
+
 # Classic electron radius (meters)
 r_e = e**2 / (4*pi * eps0 * m_e*c**2)
 
@@ -14,6 +21,11 @@ coef_I2a0 = (2/pi/P_ru * 1e10)**.5
 
 # covert FWHM of `E^2` to RMS*sqrt(2) of `E`
 coef_fwhm = (2*np.log(2))**-0.5
+
+m_e_cgs = 9.1093837015e-28
+c_cgs = 29979245800.0
+e_cgs = 4.803204712570263e-10
+coef_Eion2a0 = 1e-4 * (e * 1e7)**2 / ( 8*pi * m_e_cgs * c_cgs**2 * e_cgs**2)
 
 class CheatSheet:
     """
@@ -196,6 +208,29 @@ class CheatSheet:
             return 1e6 * l.prm['gamma_p'] / pi / r_e / (c*l.prm['tau']*1e-9)**2
         if name is 'critPower':
             return l.prm['n_c'] * (2*P_ru) / l.prm['Power']
+
+    def element_Zmax(l, name):
+        """
+        Get the maximal ion number which can be produced by the laser
+        optical field ionization. The expression is taken from a simple
+        static field model given in [S. Augst et al PRL 63 2212 (1989)].
+
+        Parameter
+        ---------
+        name: string
+            Name of the element which can be interpreted by medeleev library
+        """
+        if not mendeleev_avail:
+            print('mendeleev library is not avaliable')
+            return 0.0
+
+        ionenergies = table_element(name).ionenergies
+        Z_states = np.arange(1, len(ionenergies)+1)
+
+        a_ioniz = np.array([ionenergies[iz]**2/iz for iz in Z_states])
+        a_ioniz *= coef_Eion2a0*l.prm['lam0']
+
+        return (a_ioniz<l.prm['a0']).sum()
 
     def _a0_from_Intens(l):
         return 1e-9 * coef_I2a0*l.prm['lam0']*l.prm['Intensity']**.5
