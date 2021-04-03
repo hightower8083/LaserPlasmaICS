@@ -22,6 +22,8 @@ coef_I2a0 = (2/pi/P_ru * 1e10)**.5
 # covert FWHM of `E^2` to RMS*sqrt(2) of `E`
 coef_fwhm = (2*np.log(2))**-0.5
 
+mc2_MeV = m_e * c**2 / e * 1e-6
+
 m_e_cgs = 9.1093837015e-28
 c_cgs = 29979245800.0
 e_cgs = 4.803204712570263e-10
@@ -88,6 +90,7 @@ class CheatSheet:
             l.prm['lam0'] = 0.8
             if l.verbose: print('assume lam0=0.8')
 
+        l.prm['k0'] = 2 * np.pi / l.prm['lam0']
         l.prm['n_c'] = 1e6 * pi / r_e / l.prm['lam0']**2
 
         if 'pol' not in l.prm:
@@ -95,9 +98,13 @@ class CheatSheet:
             if l.verbose: print("assume pol='linear'")
 
         if 'tau' in l.prm:
+            l.prm['ctau'] = l.prm['tau'] * c * 1e-9
             l.prm['tau_fwhm'] = l.prm['tau'] / coef_fwhm
+            l.prm['ctau_fwhm'] = l.prm['tau_fwhm'] * c * 1e-9
         elif 'tau_fwhm' in l.prm:
+            l.prm['ctau_fwhm'] = l.prm['tau_fwhm'] * c * 1e-9
             l.prm['tau'] = l.prm['tau_fwhm'] * coef_fwhm
+            l.prm['ctau'] = l.prm['tau'] * c * 1e-9
         else:
             if l.verbose: print('no pulse duration')
 
@@ -135,9 +142,9 @@ class CheatSheet:
             if l.verbose: print('no laser field')
 
         if 'a0' in l.prm:
-            if l.prm['pol'] is 'linear':
+            if l.prm['pol'] == 'linear':
                  l.prm['gamma_p'] = (1 + l.prm['a0']**2/2.)**.5
-            elif l.prm['pol'] is 'circular':
+            elif l.prm['pol'] == 'circular':
                  l.prm['gamma_p'] = (1 + l.prm['a0']**2)**.5
 
         # PLASMA
@@ -198,15 +205,15 @@ class CheatSheet:
             'critPower'   : density for which laser power supports relativistic
                             self-focusing [G.-Z. Sun Phys. Fluids 1987]
         """
-        if name is 'WLu':
+        if name == 'WLu':
             return 1e6 * l.prm['a0'] / pi  / r_e / l.prm['w0']**2
-        if name is 'transverse':
+        if name == 'transverse':
             return 1e6 * 2**.5 * l.prm['gamma_p'] / pi  / r_e / l.prm['w0']**2
-        if name is 'longitudinal':
+        if name == 'longitudinal':
             return 1e6 / pi / r_e / (c*l.prm['tau']*1e-9)**2
-        if name is 'longitud_rel':
+        if name == 'longitud_rel':
             return 1e6 * l.prm['gamma_p'] / pi / r_e / (c*l.prm['tau']*1e-9)**2
-        if name is 'critPower':
+        if name == 'critPower':
             return l.prm['n_c'] * (2*P_ru) / l.prm['Power']
 
     def element_Zmax(l, name):
@@ -231,6 +238,48 @@ class CheatSheet:
         a_ioniz *= coef_Eion2a0*l.prm['lam0']
 
         return (a_ioniz<l.prm['a0']).sum()
+
+    def lwfa_max_energy(l, name):
+        """
+        Get maximum electron energy achieved in LWFA process.
+
+        Parameter
+        ---------
+        name: string
+            'WLu'         : first part in Eq (6).a from [W Lu PRSTAB 2007]
+            'WLu1'        : second part from Eq (6).a from [W Lu PRSTAB 2007]
+            'Gordienko'   : Eq (1) from [Gordienko, Pukhov PoP 2005]
+            'GordienkoLu' : Eq (13).a from [W Lu PRSTAB 2007]
+        """
+        if name == 'WLu':
+            return 2/3 * mc2_MeV * l.prm['n_c']/ l.prm['n_pe'] * l.prm['a0']
+        if name == 'WLu1':
+            return mc2_MeV * (l.prm['n_c']/ l.prm['n_pe'])**(2/3) \
+                    * (l.prm['Power'] / P_ru)**(1/3)
+        if name == 'Gordienko':
+            return 0.65 * mc2_MeV * (l.prm['ctau_fwhm']/l.prm['lam0']) \
+                    * (l.prm['Power'] / P_ru)**0.5
+        if name == 'GordienkoLu':
+            return 0.16 * mc2_MeV * (l.prm['ctau_fwhm']/l.prm['w0']) \
+                    * (l.prm['Power'] / P_ru)**(2/3) \
+                    * (l.prm['n_c']/ l.prm['n_pe'])**(1/3)
+
+    def lwfa_max_charge(l, name):
+        """
+        Get maximum electron beam charge achieved in LWFA process (in pC).
+
+        Parameter
+        ---------
+        name: string
+            'WLu'         : Eq (10).a from [W Lu PRSTAB 2007]
+            'Gordienko'   : Eq (2) from [Gordienko, Pukhov PoP 2005]
+        """
+        if name == 'WLu':
+            return 0.53 * e * 1e12 / (l.prm['k0'] * r_e * 1e6) \
+                    * (l.prm['Power'] / P_ru)**(1/2)
+        if name == 'Gordienko':
+            return 1.8 * e * 1e12 / (l.prm['k0'] * r_e * 1e6) \
+                    * (l.prm['Power'] / P_ru)**(1/2)
 
     def _a0_from_Intens(l):
         return 1e-9 * coef_I2a0*l.prm['lam0']*l.prm['Intensity']**.5
