@@ -156,8 +156,8 @@ class CheatSheet:
                 l.prm['v_e'] = 1.0
                 if l.verbose: print('plasma is relativistic')
         else:
-            l.prm['T_e'] = np.infty
-            l.prm['T_e_K'] = np.infty
+            l.prm['T_e'] = np.inf
+            l.prm['T_e_K'] = np.inf
             l.prm['v_e'] = 1.0
 
         if 'n_pe' in l.prm:
